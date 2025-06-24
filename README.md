@@ -147,7 +147,6 @@ See `LICENSE` for more information.
 * [Playwright](https://playwright.dev/)
 * [BeautifulSoup4](https://www.crummy.com/software/BeautifulSoup/)
 * [Best-README-Template](https://github.com/othneildrew/Best-README-Template)
-* [shields.io](https://shields.io)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
