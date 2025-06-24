@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+
+import argparse
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeout
 from bs4 import BeautifulSoup
@@ -17,33 +20,92 @@ category_map = {
 EXPORT_FORMATS = ['csv', 'excel', 'json', 'txt']
 CHECKPOINT_FILE = "isranews_checkpoint.json"
 
-def input_categories():
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Isranews News Scraper CLI\n"
+                    "สามารถดึงข่าว, อัปเดต, ผสานข่าวเดิม และเลือกหมวด, หน้า, วันที่, format, ไฟล์ผลลัพธ์ ฯลฯ\n"
+                    "ตัวอย่าง: python isranews_scraper.py -c all -s 1 -e 3 -f excel -o ข่าวอิศรา",
+        formatter_class=argparse.RawTextHelpFormatter
+    )
+    parser.add_argument(
+        '-c', '--categories',
+        type=str,
+        help='หมวดหมู่ข่าว เช่น all, ข่าว, 1, "ศูนย์ข่าวสืบสวน", หรือ path\n'
+             'เช่น -c all หรือ -c "1,2" หรือ -c "ข่าว,ศูนย์ข่าวสืบสวน"\n'
+             '(ไม่ระบุ = interactive)'
+    )
+    parser.add_argument(
+        '-s', '--start',
+        type=int,
+        help='หน้าที่เริ่มต้น (default=1)'
+    )
+    parser.add_argument(
+        '-e', '--end',
+        type=int,
+        help='หน้าสุดท้าย (0=ถึงหน้าสุดท้าย, default=1)'
+    )
+    parser.add_argument(
+        '-d', '--date',
+        type=str,
+        help='กรองเฉพาะข่าวที่ใหม่กว่า วันที่ (YYYY-MM-DD หรือ พ.ศ.)'
+    )
+    parser.add_argument(
+        '-f', '--format',
+        type=str,
+        choices=EXPORT_FORMATS,
+        help=f'รูปแบบไฟล์ export ({" / ".join(EXPORT_FORMATS)})'
+    )
+    parser.add_argument(
+        '-o', '--output',
+        type=str,
+        help='ชื่อไฟล์ผลลัพธ์ (ไม่ต้องใส่นามสกุล)'
+    )
+    parser.add_argument(
+        '--max-threads',
+        type=int,
+        default=8,
+        help='จำนวน threads (default=8)'
+    )
+    # help flag มีโดยอัตโนมัติ
+    return parser.parse_args()
+
+def input_categories(sel=None):
+    if sel is not None:
+        return parse_categories(sel)
     print("เลือกหมวดข่าว (เลือกหลายหมวดด้วย comma หรือ all):")
     for i, (k, v) in enumerate(category_map.items(), 1):
         print(f"  {i}. {k} ({v})")
     print("  0. กำหนด URL เอง (comma คั่นได้)")
     sel = input("เลือกหมวด (เลข, all, หรือ path เอง): ").strip().lower()
+    return parse_categories(sel)
+
+def parse_categories(sel):
+    sel = sel.strip().lower()
     cats = []
     if sel == "all":
         cats = list(category_map.values())
-    elif sel == "0":
-        url = input("ใส่ path URL ต่อจาก https://www.isranews.org/ (คั่น , ได้): ").strip()
-        cats = [s.strip() for s in url.split(",") if s.strip()]
     elif "," in sel:
-        nums = [int(s) for s in sel.split(",") if s.isdigit() and 1 <= int(s) <= len(category_map)]
-        cats = [list(category_map.values())[i-1] for i in nums]
-    elif sel.isdigit() and 1 <= int(sel) <= len(category_map):
-        cats = [list(category_map.values())[int(sel)-1]]
+        items = [s.strip() for s in sel.split(",") if s.strip()]
+        for x in items:
+            if x in category_map:
+                cats.append(category_map[x])
+            elif x.isdigit() and 1 <= int(x) <= len(category_map):
+                cats.append(list(category_map.values())[int(x)-1])
+            elif x.startswith("article/"):
+                cats.append(x)
     elif sel in category_map:
         cats = [category_map[sel]]
+    elif sel.isdigit() and 1 <= int(sel) <= len(category_map):
+        cats = [list(category_map.values())[int(sel)-1]]
     elif sel.startswith("article/"):
         cats = [sel]
     else:
-        print("เลือกไม่ถูกต้อง ใช้ข่าว (article/isranews-news.html) ให้")
         cats = [list(category_map.values())[0]]
     return cats
 
-def input_page_range():
+def input_page_range(cli_start=None, cli_end=None):
+    if cli_start is not None and cli_end is not None:
+        return cli_start, cli_end
     try:
         start = int(input("ต้องการดึงข่าวจากหน้าไหน? (เริ่มหน้า, default=1): ") or "1")
         end = input("ถึงหน้าไหน? (จบหน้า, 0=ดึงจนจบ, default=1): ") or "1"
@@ -53,7 +115,9 @@ def input_page_range():
         print("ค่าไม่ถูกต้อง ใช้ default start=1, end=1")
         return 1, 1
 
-def input_export_format():
+def input_export_format(cli_fmt=None):
+    if cli_fmt:
+        return cli_fmt
     print("เลือกรูปแบบไฟล์ export:")
     for i, fmt in enumerate(EXPORT_FORMATS, 1):
         print(f"  {i}. {fmt}")
@@ -62,23 +126,25 @@ def input_export_format():
         return EXPORT_FORMATS[int(sel) - 1]
     return 'csv'
 
-def input_filename():
+def input_filename(cli_name=None):
+    if cli_name:
+        return cli_name
     return input("ตั้งชื่อไฟล์ผลลัพธ์ (default: isranews): ").strip() or "isranews"
 
-def input_filter_date():
-    d = input("กรองเฉพาะข่าวที่ใหม่กว่า (YYYY-MM-DD, เว้นว่าง=ไม่กรอง): ").strip()
-    try:
-        if d:
+def input_filter_date(d=None):
+    if d is not None:
+        d = d.strip()
+        if not d:
+            return None
+        try:
             parts = d.split("-")
             if len(parts) == 3 and int(parts[0]) > 2400:
-                print(f"คุณกรอกปี พ.ศ. ({parts[0]}) ระบบจะแปลงเป็น ค.ศ. ({int(parts[0])-543})")
                 d = f"{int(parts[0])-543}-{parts[1]}-{parts[2]}"
             return datetime.strptime(d, "%Y-%m-%d")
-        else:
+        except Exception:
+            print("วันที่ไม่ถูกต้อง ข้ามการกรอง")
             return None
-    except Exception:
-        print("วันที่ไม่ถูกต้อง ข้ามการกรอง")
-        return None
+    return None
 
 def get_news_list_from_page(html):
     soup = BeautifulSoup(html, "html.parser")
@@ -195,7 +261,6 @@ def extract_full_content_and_meta(url, max_retry=2):
     return '[ERROR]', '', '', ''
 
 def load_old_news(filename, fmt):
-    """โหลดข่าวเดิมจากไฟล์ (return เป็น list of dict)"""
     if not os.path.exists(filename):
         return []
     try:
@@ -207,29 +272,24 @@ def load_old_news(filename, fmt):
             with open(filename, "r", encoding="utf-8") as f:
                 return json.load(f)
         elif fmt == 'txt':
-            # ไม่รองรับ merge txt
             return []
     except Exception as e:
         print(f"ไม่สามารถโหลดไฟล์เดิม: {filename}: {e}")
     return []
 
 def merge_news(old_news, new_news):
-    """merge: ถ้ามี url เดิม แต่เนื้อหาเปลี่ยน update, url ใหม่ append"""
     url_to_old = {n["URL"]: n for n in old_news if "URL" in n}
     out = []
     for n in new_news:
         if n["URL"] in url_to_old:
-            # compare content
             old_n = url_to_old[n["URL"]]
             if n["เนื้อหา"] != old_n.get("เนื้อหา", ""):
-                out.append(n)  # เนื้อหาเปลี่ยน, update ทั้ง row
+                out.append(n)
             else:
-                # ไม่เปลี่ยน เอาอันเดิมไว้ (หรือจะเอาอันใหม่ก็ได้)
                 out.append(old_n)
             del url_to_old[n["URL"]]
         else:
             out.append(n)
-    # append old ที่เหลือ (ที่ไม่มีในรอบใหม่)
     for url, old_n in url_to_old.items():
         out.append(old_n)
     return out
@@ -252,16 +312,6 @@ def export_news(news_list, filename, fmt):
     else:
         print("ไม่รองรับ format นี้")
 
-def save_checkpoint(filename, news_list):
-    with open(filename, "w", encoding="utf-8") as f:
-        json.dump(news_list, f, ensure_ascii=False, indent=2)
-
-def load_checkpoint(filename):
-    if not os.path.exists(filename):
-        return []
-    with open(filename, "r", encoding="utf-8") as f:
-        return json.load(f)
-
 def scrape_category(cat_path, start, end, filter_date, scraped_urls):
     results = []
     with sync_playwright() as p:
@@ -273,7 +323,7 @@ def scrape_category(cat_path, start, end, filter_date, scraped_urls):
             url = f"{base_url}/{cat_path}" if page_num == 1 else f"{base_url}/{cat_path}?start={page_start}"
             print(f"\n[PAGE {page_num}] {url}")
             try:
-                page.goto(url, timeout=10000)
+                page.goto(url, wait_until="domcontentloaded", timeout=20000)
                 page.wait_for_timeout(random.randint(1000, 1800))
                 html = page.content()
             except Exception as e:
@@ -296,26 +346,21 @@ def scrape_category(cat_path, start, end, filter_date, scraped_urls):
         browser.close()
     return results
 
-if __name__ == "__main__":
-    news_list = []
-    if os.path.exists(CHECKPOINT_FILE):
-        resume = input("พบ checkpoint เดิม ต้องการ resume? (y/n): ").strip().lower()
-        if resume == "y":
-            news_list = load_checkpoint(CHECKPOINT_FILE)
-            print(f"อ่าน checkpoint สำเร็จ ({len(news_list)} ข่าว)")
-    cat_paths = input_categories()
-    start, end = input_page_range()
-    filter_date = input_filter_date()
-    fmt = input_export_format()
-    filename = input_filename()
-    # --- อ่านข่าวเก่า (append/update) ---
+def main():
+    args = parse_args()
+    cat_paths = input_categories(args.categories)
+    start, end = input_page_range(args.start, args.end)
+    filter_date = input_filter_date(args.date)
+    fmt = input_export_format(args.format)
+    filename = input_filename(args.output)
+    max_threads = args.max_threads
+
     filename_with_ext = f"{filename}.{('xlsx' if fmt=='excel' else fmt)}"
     old_news = load_old_news(filename_with_ext, fmt)
-    # --- SCRAPING LOOP (MULTI CATEGORY, PARALLEL) ---
     scraped_urls = {news["URL"] for news in old_news}
     news_results = []
-    max_workers = min(8, len(cat_paths))
-    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+    workers = min(max_threads, len(cat_paths))
+    with ThreadPoolExecutor(max_workers=workers) as executor:
         future2cat = {
             executor.submit(scrape_category, cat_path, start, end, filter_date, scraped_urls): cat_path
             for cat_path in cat_paths
@@ -323,12 +368,8 @@ if __name__ == "__main__":
         for future in tqdm(as_completed(future2cat), total=len(future2cat), desc="Scraping Categories"):
             news_results.extend(future.result())
     news_list = merge_news(old_news, news_results)
-    save_checkpoint(CHECKPOINT_FILE, news_list)
-
-    print(f"\nรวมข่าวทั้งหมด {len(news_list)} ข่าว, กำลังดึงเนื้อหาข่าวแต่ละข่าว...\n")
 
     # --- SCRAPE CONTENTS (Parallel URLs) ---
-    max_threads = 8
     total = len(news_list)
     idx_to_page = {}
     per_page = 10
@@ -355,7 +396,6 @@ if __name__ == "__main__":
             news_list[i]['หมวดหมู่ข่าว'] = categories
             news_list[i]['Tags'] = tags
             news_list[i]['ยอดวิว'] = views
-            save_checkpoint(CHECKPOINT_FILE, news_list)
             pbar.update(1)
         pbar.update(len(done_idx))
 
@@ -363,5 +403,6 @@ if __name__ == "__main__":
     print("\n" + "="*60)
     print(f"บันทึกข่าวทั้งหมดลงไฟล์ {filename}.{fmt} แล้ว")
     print("="*60)
-    if os.path.exists(CHECKPOINT_FILE):
-        os.remove(CHECKPOINT_FILE)
+
+if __name__ == "__main__":
+    main()
