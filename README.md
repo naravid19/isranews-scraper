@@ -76,7 +76,7 @@
 ### Installation
 
 ```bash
-pip install playwright beautifulsoup4 pandas tqdm
+pip install -r requirements.txt
 python -m playwright install
 ```
 
