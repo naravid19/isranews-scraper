@@ -1,149 +1,159 @@
-แน่นอนครับ! นี่คือไฟล์ **README.md** สำหรับโปรเจกต์ `isranews-scraper` ที่จัดรูปแบบและตกแต่งอย่างสวยงาม พร้อมอธิบายวิธีการใช้งาน และอ้างอิง tag/ฟีเจอร์ตามภาพหน้าหลัก GitHub ที่คุณแนบมา
+<!-- Improved compatibility of back to top link -->
+
+<a id="readme-top"></a>
+
+<!-- PROJECT SHIELDS -->
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.8+-blue?logo=python" />
+  <img src="https://img.shields.io/badge/Playwright-%5E1.0-green" />
+  <img src="https://img.shields.io/badge/BeautifulSoup-OK-blueviolet" />
+  <img src="https://img.shields.io/badge/Automation-Ready-brightgreen" />
+</p>
+
+<!-- PROJECT LOGO -->
+
+<div align="center">
+  <h1><b>isranews-scraper</b></h1>
+  <p>
+    <b>A robust and parallel web scraper for <a href="https://www.isranews.org" target="_blank">isranews.org</a><br>
+    with multi-category support and data export</b>
+  </p>
+</div>
 
 ---
 
-````markdown
-# isranews-scraper
+## 📰 About the Project
 
-> **A robust and parallel web scraper for [isranews.org](https://www.isranews.org) with multi-category support and data export**
+`isranews-scraper` คือ Web Scraper อัตโนมัติสำหรับเว็บไซต์ [isranews.org](https://www.isranews.org)
+รองรับการดึงข่าวพร้อมกันหลายหมวดหมู่ หลายหน้า สามารถ export ข้อมูลข่าวเป็นไฟล์ `CSV`, `Excel`, `JSON`, หรือ `TXT`
+ใช้เทคนิค scraping แบบขนาน (parallel) ทำให้เร็วมาก รองรับการใช้งานผ่าน CLI แบบมืออาชีพ
 
-![Python](https://img.shields.io/badge/Python-3.8+-blue?logo=python)
-![Playwright](https://img.shields.io/badge/Playwright-%5E1.0-green)
-![BeautifulSoup](https://img.shields.io/badge/BeautifulSoup-OK-blueviolet)
-![Automation](https://img.shields.io/badge/Automation-Ready-brightgreen)
-
----
-
-## 📰 Overview
-
-`isranews-scraper` เป็น **Web Scraper สำหรับเว็บไซต์ isranews.org** ที่ออกแบบมาเพื่อดึงข่าวแบบอัตโนมัติ รองรับการเลือกหมวดหมู่ หลายหน้า หลายหมวด หรือทั้งเว็บไซต์ สามารถ export ข้อมูลเป็นไฟล์ `CSV`, `Excel`, `JSON`, หรือ `TXT` และรองรับการ scrape ข้อมูลแบบขนาน (parallel) เพื่อความรวดเร็วสูงสุด
-
-**Features:**
-- เลือกหมวดข่าวเองหรือ scrape ทั้งเว็บ (multi-category)
-- กำหนดช่วงหน้า (start-end) และวันที่
-- Export ข้อมูลเป็น csv, xlsx, json, txt
-- รองรับ CLI เต็มรูปแบบ พร้อม `--help`
-- อัปเดตข่าว/ผสานกับไฟล์เดิมอัตโนมัติ
-- รองรับ automation และใช้งานร่วมกับ workflow อื่นได้
-- ใช้ `Playwright` และ `BeautifulSoup` ทำให้ scrape ข้อมูลได้แม้เว็บเปลี่ยนแปลง
-- Threaded scraping เร็วสุดๆ (ตั้งค่า `--max-threads` ได้)
+<details>
+  <summary><b>Table of Contents</b></summary>
+  <ol>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#built-with">Built With</a></li>
+    <li><a href="#getting-started">Getting Started</a></li>
+    <li><a href="#usage">Usage</a></li>
+    <li><a href="#roadmap">Roadmap</a></li>
+    <li><a href="#license">License</a></li>
+  </ol>
+</details>
 
 ---
 
-## 🚀 Quick Start
+## ✨ Features
 
-### **ติดตั้ง dependency**
-
-```bash
-pip install playwright beautifulsoup4 pandas tqdm
-python -m playwright install
-````
-
-### **ใช้งานผ่าน CLI**
-
-ตัวอย่างคำสั่งง่ายๆ:
-
-```bash
-python isranews_scraper.py -c all -s 1 -e 3 -f excel -o ข่าวอิศรา
-```
-
-หรือ
-
-```bash
-python isranews_scraper.py -c 2 -s 1 -e 0 -f csv -o isranews-community
-```
-
-**หมายเหตุ:**
-
-* ถ้าไม่ใส่ parameter จะเข้าสู่ interactive mode (ถามผ่าน command line)
-* `-c` หมวดหมู่ (`all`, เลข, ชื่อ, หรือ path)
-* `-s` หน้าเริ่มต้น
-* `-e` หน้าสุดท้าย (`0` = scrape จนหมด)
-* `-f` รูปแบบ export (`csv`, `excel`, `json`, `txt`)
-* `-o` ชื่อไฟล์ผลลัพธ์ (ไม่ต้องใส่นามสกุล)
-* `-d` วันที่กรอง (`YYYY-MM-DD` หรือ พ.ศ.)
-* `--max-threads` จำนวน thread (default=8)
-
-ดูรายละเอียดเพิ่มเติมด้วย `-h` หรือ `--help`
-
-```bash
-python isranews_scraper.py -h
-```
+* ✅ เลือกหมวดข่าวเอง หรือ scrape ทั้งเว็บ (multi-category)
+* ✅ ดึงหลายหน้า, หลายหมวด, หรือกำหนด URL ได้
+* ✅ รองรับ export หลายฟอร์แมต (`csv`, `excel`, `json`, `txt`)
+* ✅ Scrape ข้อมูลข่าวแบบ parallel ด้วย multi-thread (เร็วมาก)
+* ✅ อัปเดต/ผสานข้อมูลเดิมโดยอัตโนมัติ
+* ✅ กรองข่าวตามวันที่ (`YYYY-MM-DD` หรือ พ.ศ.)
+* ✅ ใช้งานผ่าน CLI พร้อม `--help`
+* ✅ เหมาะกับ automation, data analysis, data pipeline
 
 ---
 
-## 🔖 ตัวอย่างคำสั่ง
+## 🛠️ Built With
 
-* ดึงทุกหมวดทุกหน้าเป็น Excel:
-
-  ```bash
-  python isranews_scraper.py -c all -s 1 -e 0 -f excel -o all-news
-  ```
-* ดึงเฉพาะหมวด "ศูนย์ข่าวสืบสวน" 20 หน้า แปลงเป็น CSV:
-
-  ```bash
-  python isranews_scraper.py -c "ศูนย์ข่าวสืบสวน" -s 1 -e 20 -f csv -o investigative-news
-  ```
-* กรองข่าวหลังวันที่ 2024-01-01:
-
-  ```bash
-  python isranews_scraper.py -c 1 -s 1 -e 0 -d 2024-01-01 -o new-news
-  ```
-
----
-
-## 🏷️ Supported Categories
-
-| เลข | ชื่อหมวด               | Path                                        |
-| --- | ---------------------- | ------------------------------------------- |
-| 1   | ข่าว                   | article/isranews-news.html                  |
-| 2   | ศูนย์ข่าวเพื่อชุมชน    | article/community/comm-news.html            |
-| 3   | ศูนย์ข่าวภาคใต้        | article/south-news/other-news.html          |
-| 4   | ศูนย์ข่าวนโยบายสาธารณะ | article/thaireform/thaireform-news.html     |
-| 5   | ศูนย์ข่าวสืบสวน        | article/investigative/investigate-news.html |
-
----
-
-## ⚡ Features
-
-* **python** • **automation** • **news-scraper**
-* **scraping** • **web-scraper** • **beautifulsoup**
-* **data-collection** • **playwright** • **thai-news** • **isranews**
-* Multi-threaded, resilient, easy to extend
-
----
-
-## 📂 Output
-
-Output ตัวอย่าง (CSV/Excel/JSON/TXT):
-
-| หัวข้อ | เนื้อหา | วันที่ | URL | หมวดหมู่ข่าว | Tags | ยอดวิว |
-| ------ | ------- | ------ | --- | ------------ | ---- | ------ |
-
-> ในไฟล์ TXT จะ export ในรูปแบบอ่านง่าย พร้อมแยกข่าวแต่ละชิ้นด้วย `=`
-
----
-
-## 🧑‍💻 Developer Notes
-
-* สามารถพัฒนาเพิ่มเติม เช่น
-
-  * Scrape รูปภาพ หรือ multimedia
-  * Export รูปแบบอื่น, Push ข้อมูลไป DB, Google Sheets
-  * ตัดคำ/วิเคราะห์ NLP ต่อยอดข่าว
-  * ทำ Dashboard Visualize หรือเชื่อม API
-
----
-
-## 🛠️ Credits
-
+* [Python 3.8+](https://www.python.org/)
 * [Playwright](https://playwright.dev/)
-* [BeautifulSoup](https://www.crummy.com/software/BeautifulSoup/)
+* [BeautifulSoup4](https://www.crummy.com/software/BeautifulSoup/)
 * [pandas](https://pandas.pydata.org/)
 * [tqdm](https://tqdm.github.io/)
 
 ---
 
-## License
+## 🚀 Getting Started
 
-[MIT](./LICENSE)
+### Prerequisites
+
+* Python >= 3.8
+* ติดตั้งแพ็กเกจด้านล่าง
+
+### Installation
+
+```bash
+pip install playwright beautifulsoup4 pandas tqdm
+python -m playwright install
+```
+
+---
+
+## 💻 Usage
+
+### Basic CLI Example
+
+```bash
+python isranews_scraper.py -c all -s 1 -e 3 -f excel -o ข่าวอิศรา
+```
+
+**ตัวเลือกหลัก:**
+
+* `-c`, `--categories`    เลือกหมวดข่าว (`all`, ชื่อหมวด, หมายเลข, หรือ path)
+* `-s`, `--start`         หน้าเริ่มต้น (default: 1)
+* `-e`, `--end`           หน้าสุดท้าย (`0` = ดึงจนจบ, default: 1)
+* `-f`, `--format`        รูปแบบไฟล์ export (`csv`, `excel`, `json`, `txt`)
+* `-o`, `--output`        ชื่อไฟล์ผลลัพธ์ (ไม่ต้องใส่นามสกุล)
+* `-d`, `--date`          กรองข่าวที่ใหม่กว่ากำหนด (`YYYY-MM-DD` หรือ พ.ศ.)
+* `--max-threads`         จำนวน threads (default: 8)
+* `-h`, `--help`          แสดงวิธีใช้งาน
+
+### ตัวอย่างคำสั่ง
+
+* ดึงข่าวทุกหมวด 3 หน้า เป็นไฟล์ Excel:
+
+  ```bash
+  python isranews_scraper.py -c all -s 1 -e 3 -f excel -o ข่าวอิศรา
+  ```
+
+* ดึงเฉพาะ "ศูนย์ข่าวสืบสวน" ทุกหน้า เป็น JSON:
+
+  ```bash
+  python isranews_scraper.py -c "ศูนย์ข่าวสืบสวน" -s 1 -e 0 -f json -o investigative-news
+  ```
+
+* ดึงข่าวหน้า 1-5, กรองวันที่หลัง 2024-01-01:
+
+  ```bash
+  python isranews_scraper.py -c 1 -s 1 -e 5 -f csv -o isranews-news -d 2024-01-01
+  ```
+
+---
+
+## 🔖 Roadmap
+
+* [x] Parallel scraping (multi-thread)
+* [x] Export หลาย format
+* [x] Merge ข่าวกับไฟล์เก่า
+* [ ] เพิ่ม feature ดึงภาพ/เอกสารประกอบข่าว
+* [ ] ตั้งเวลาทำงานอัตโนมัติ (cron, schedule)
+* [ ] Web UI / API
+
+---
+
+## 📄 License
+
+Distributed under the MIT License.
+See `LICENSE` for more information.
+
+---
+
+## 🙏 Acknowledgments
+
+* [isranews.org](https://www.isranews.org)
+* [Playwright](https://playwright.dev/)
+* [BeautifulSoup4](https://www.crummy.com/software/BeautifulSoup/)
+* [Best-README-Template](https://github.com/othneildrew/Best-README-Template)
+* [shields.io](https://shields.io)
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+---
+
+**หมายเหตุ:**
+
+* โค้ดและ README นี้เน้นเพื่อการศึกษา/รีเสิร์ช
+* ข้อความและตัวอย่างหมวดหมู่ใน isranews อาจเปลี่ยนแปลงได้
