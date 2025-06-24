@@ -194,6 +194,46 @@ def extract_full_content_and_meta(url, max_retry=2):
             continue
     return '[ERROR]', '', '', ''
 
+def load_old_news(filename, fmt):
+    """โหลดข่าวเดิมจากไฟล์ (return เป็น list of dict)"""
+    if not os.path.exists(filename):
+        return []
+    try:
+        if fmt == 'csv':
+            return pd.read_csv(filename, dtype=str).fillna("").to_dict('records')
+        elif fmt == 'excel':
+            return pd.read_excel(filename, dtype=str).fillna("").to_dict('records')
+        elif fmt == 'json':
+            with open(filename, "r", encoding="utf-8") as f:
+                return json.load(f)
+        elif fmt == 'txt':
+            # ไม่รองรับ merge txt
+            return []
+    except Exception as e:
+        print(f"ไม่สามารถโหลดไฟล์เดิม: {filename}: {e}")
+    return []
+
+def merge_news(old_news, new_news):
+    """merge: ถ้ามี url เดิม แต่เนื้อหาเปลี่ยน update, url ใหม่ append"""
+    url_to_old = {n["URL"]: n for n in old_news if "URL" in n}
+    out = []
+    for n in new_news:
+        if n["URL"] in url_to_old:
+            # compare content
+            old_n = url_to_old[n["URL"]]
+            if n["เนื้อหา"] != old_n.get("เนื้อหา", ""):
+                out.append(n)  # เนื้อหาเปลี่ยน, update ทั้ง row
+            else:
+                # ไม่เปลี่ยน เอาอันเดิมไว้ (หรือจะเอาอันใหม่ก็ได้)
+                out.append(old_n)
+            del url_to_old[n["URL"]]
+        else:
+            out.append(n)
+    # append old ที่เหลือ (ที่ไม่มีในรอบใหม่)
+    for url, old_n in url_to_old.items():
+        out.append(old_n)
+    return out
+
 def export_news(news_list, filename, fmt):
     for news in news_list:
         dt = parse_date(news.get("วันที่_raw", ""))
@@ -223,7 +263,6 @@ def load_checkpoint(filename):
         return json.load(f)
 
 def scrape_category(cat_path, start, end, filter_date, scraped_urls):
-    """Scrape หมวดเดียว จบใน thread"""
     results = []
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
@@ -269,9 +308,11 @@ if __name__ == "__main__":
     filter_date = input_filter_date()
     fmt = input_export_format()
     filename = input_filename()
-
+    # --- อ่านข่าวเก่า (append/update) ---
+    filename_with_ext = f"{filename}.{('xlsx' if fmt=='excel' else fmt)}"
+    old_news = load_old_news(filename_with_ext, fmt)
     # --- SCRAPING LOOP (MULTI CATEGORY, PARALLEL) ---
-    scraped_urls = {news["URL"] for news in news_list}
+    scraped_urls = {news["URL"] for news in old_news}
     news_results = []
     max_workers = min(8, len(cat_paths))
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
@@ -281,7 +322,7 @@ if __name__ == "__main__":
         }
         for future in tqdm(as_completed(future2cat), total=len(future2cat), desc="Scraping Categories"):
             news_results.extend(future.result())
-    news_list.extend(news_results)
+    news_list = merge_news(old_news, news_results)
     save_checkpoint(CHECKPOINT_FILE, news_list)
 
     print(f"\nรวมข่าวทั้งหมด {len(news_list)} ข่าว, กำลังดึงเนื้อหาข่าวแต่ละข่าว...\n")
