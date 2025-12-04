@@ -9,7 +9,7 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <a href="https://github.com/othneildrew/Best-README-Template">
+  <a href="https://github.com/naravid19/isranews-scraper">
     <img src="images/logo.png" alt="Logo" width="80" height="80">
   </a>
 
@@ -18,14 +18,14 @@
   <p align="center">
     A robust, asynchronous web scraper for Isranews.org with a modern GUI and CLI support.
     <br />
-    <a href="https://github.com/your_username/repo_name"><strong>Explore the docs »</strong></a>
+    <a href="https://github.com/naravid19/isranews-scraper"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="https://github.com/your_username/repo_name">View Demo</a>
+    <a href="https://github.com/naravid19/isranews-scraper">View Demo</a>
     &middot;
-    <a href="https://github.com/your_username/repo_name/issues">Report Bug</a>
+    <a href="https://github.com/naravid19/isranews-scraper/issues">Report Bug</a>
     &middot;
-    <a href="https://github.com/your_username/repo_name/issues">Request Feature</a>
+    <a href="https://github.com/naravid19/isranews-scraper/issues">Request Feature</a>
   </p>
 </div>
 
@@ -98,7 +98,7 @@ To get a local copy up and running follow these simple steps.
 
 1.  Clone the repo
     ```sh
-    git clone https://github.com/your_username/isranews-scraper.git
+    git clone https://github.com/naravid19/isranews-scraper.git
     ```
 2.  Install Python packages
     ```sh
@@ -161,7 +161,7 @@ python isranews_scraper.py -c "ศูนย์ข่าวสืบสวน" -s
 - [ ] Implement scheduled scraping (Cron/Task Scheduler integration)
 - [ ] REST API for remote triggering
 
-See the [open issues](https://github.com/your_username/repo_name/issues) for a full list of proposed features (and known issues).
+See the [open issues](https://github.com/naravid19/isranews-scraper/issues) for a full list of proposed features (and known issues).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -194,9 +194,9 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 ## Contact
 
-Your Name - [@your_twitter](https://twitter.com/your_username) - email@example.com
+Naravid - [@naravid19](https://github.com/naravid19)
 
-Project Link: [https://github.com/your_username/repo_name](https://github.com/your_username/repo_name)
+Project Link: [https://github.com/naravid19/isranews-scraper](https://github.com/naravid19/isranews-scraper)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -216,16 +216,16 @@ Project Link: [https://github.com/your_username/repo_name](https://github.com/yo
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 
-[contributors-shield]: https://img.shields.io/github/contributors/othneildrew/Best-README-Template.svg?style=for-the-badge
-[contributors-url]: https://github.com/othneildrew/Best-README-Template/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/othneildrew/Best-README-Template.svg?style=for-the-badge
-[forks-url]: https://github.com/othneildrew/Best-README-Template/network/members
-[stars-shield]: https://img.shields.io/github/stars/othneildrew/Best-README-Template.svg?style=for-the-badge
-[stars-url]: https://github.com/othneildrew/Best-README-Template/stargazers
-[issues-shield]: https://img.shields.io/github/issues/othneildrew/Best-README-Template.svg?style=for-the-badge
-[issues-url]: https://github.com/othneildrew/Best-README-Template/issues
-[license-shield]: https://img.shields.io/github/license/othneildrew/Best-README-Template.svg?style=for-the-badge
-[license-url]: https://github.com/othneildrew/Best-README-Template/blob/master/LICENSE.txt
+[contributors-shield]: https://img.shields.io/github/contributors/naravid19/isranews-scraper.svg?style=for-the-badge
+[contributors-url]: https://github.com/naravid19/isranews-scraper/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/naravid19/isranews-scraper.svg?style=for-the-badge
+[forks-url]: https://github.com/naravid19/isranews-scraper/network/members
+[stars-shield]: https://img.shields.io/github/stars/naravid19/isranews-scraper.svg?style=for-the-badge
+[stars-url]: https://github.com/naravid19/isranews-scraper/stargazers
+[issues-shield]: https://img.shields.io/github/issues/naravid19/isranews-scraper.svg?style=for-the-badge
+[issues-url]: https://github.com/naravid19/isranews-scraper/issues
+[license-shield]: https://img.shields.io/github/license/naravid19/isranews-scraper.svg?style=for-the-badge
+[license-url]: https://github.com/naravid19/isranews-scraper/blob/master/LICENSE.txt
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://linkedin.com/in/othneildrew
 [product-screenshot]: images/screenshot.png
